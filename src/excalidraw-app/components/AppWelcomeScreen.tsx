@@ -1,38 +1,13 @@
 import React from "react";
-import { PlusPromoIcon } from "../../components/icons";
 import { useI18n } from "../../i18n";
 import { WelcomeScreen } from "../../packages/excalidraw/index";
-import { isExcalidrawPlusSignedUser } from "../app_constants";
 
 export const AppWelcomeScreen: React.FC<{
   setCollabDialogShown: (toggle: boolean) => any;
   isCollabEnabled: boolean;
 }> = React.memo((props) => {
   const { t } = useI18n();
-  let headingContent;
-
-  if (isExcalidrawPlusSignedUser) {
-    headingContent = t("welcomeScreen.app.center_heading_plus")
-      .split(/(Excalidraw\+)/)
-      .map((bit, idx) => {
-        if (bit === "Excalidraw+") {
-          return (
-            <a
-              style={{ pointerEvents: "all" }}
-              href={`${
-                import.meta.env.VITE_APP_PLUS_APP
-              }?utm_source=excalidraw&utm_medium=app&utm_content=welcomeScreenSignedInUser`}
-              key={idx}
-            >
-              Excalidraw+
-            </a>
-          );
-        }
-        return bit;
-      });
-  } else {
-    headingContent = t("welcomeScreen.app.center_heading");
-  }
+  const headingContent = t("welcomeScreen.app.center_heading");
 
   return (
     <WelcomeScreen>
@@ -53,17 +28,6 @@ export const AppWelcomeScreen: React.FC<{
             <WelcomeScreen.Center.MenuItemLiveCollaborationTrigger
               onSelect={() => props.setCollabDialogShown(true)}
             />
-          )}
-          {!isExcalidrawPlusSignedUser && (
-            <WelcomeScreen.Center.MenuItemLink
-              href={`${
-                import.meta.env.VITE_APP_PLUS_LP
-              }/plus?utm_source=excalidraw&utm_medium=app&utm_content=welcomeScreenGuest`}
-              shortcut={null}
-              icon={PlusPromoIcon}
-            >
-              Try Excalidraw Plus!
-            </WelcomeScreen.Center.MenuItemLink>
           )}
         </WelcomeScreen.Center.Menu>
       </WelcomeScreen.Center>

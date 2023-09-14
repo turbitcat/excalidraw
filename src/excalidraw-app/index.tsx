@@ -69,14 +69,9 @@ import {
 } from "./data/localStorage";
 import CustomStats from "./CustomStats";
 import { restore, restoreAppState, RestoredDataState } from "../data/restore";
-import {
-  ExportToExcalidrawPlus,
-  exportToExcalidrawPlus,
-} from "./components/ExportToExcalidrawPlus";
 import { updateStaleImageStatuses } from "./data/FileManager";
 import { newElementWith } from "../element/mutateElement";
 import { isInitializedImageElement } from "../element/typeChecks";
-import { loadFilesFromFirebase } from "./data/firebase";
 import { LocalData } from "./data/LocalData";
 import { isBrowserStorageStateNewer } from "./data/tabSync";
 import clsx from "clsx";
@@ -95,6 +90,7 @@ import { ShareableLinkDialog } from "../components/ShareableLinkDialog";
 import { openConfirmModal } from "../components/OverwriteConfirm/OverwriteConfirmState";
 import { OverwriteConfirmDialog } from "../components/OverwriteConfirm/OverwriteConfirm";
 import Trans from "../components/Trans";
+import { getStorageBackend } from "./data/config";
 
 polyfill();
 
@@ -345,17 +341,21 @@ const ExcalidrawWrapper = () => {
           }, [] as FileId[]) || [];
 
         if (data.isExternalScene) {
-          loadFilesFromFirebase(
-            `${FIREBASE_STORAGE_PREFIXES.shareLinkFiles}/${data.id}`,
-            data.key,
-            fileIds,
-          ).then(({ loadedFiles, erroredFiles }) => {
-            excalidrawAPI.addFiles(loadedFiles);
-            updateStaleImageStatuses({
-              excalidrawAPI,
-              erroredFiles,
-              elements: excalidrawAPI.getSceneElementsIncludingDeleted(),
-            });
+          getStorageBackend().then((storageBackend) => {
+            storageBackend
+              ?.loadFilesFromStorageBackend(
+                `${FIREBASE_STORAGE_PREFIXES.shareLinkFiles}/${data.id}`,
+                data.key,
+                fileIds,
+              )
+              .then(({ loadedFiles, erroredFiles }) => {
+                excalidrawAPI.addFiles(loadedFiles);
+                updateStaleImageStatuses({
+                  excalidrawAPI,
+                  erroredFiles,
+                  elements: excalidrawAPI.getSceneElementsIncludingDeleted(),
+                });
+              });
           });
         } else if (isInitialLoad) {
           if (fileIds.length) {
@@ -696,18 +696,19 @@ const ExcalidrawWrapper = () => {
               onExportToBackend,
               renderCustomUI: (elements, appState, files) => {
                 return (
-                  <ExportToExcalidrawPlus
-                    elements={elements}
-                    appState={appState}
-                    files={files}
-                    onError={(error) => {
-                      excalidrawAPI?.updateScene({
-                        appState: {
-                          errorMessage: error.message,
-                        },
-                      });
-                    }}
-                  />
+                  // <ExportToExcalidrawPlus
+                  //   elements={elements}
+                  //   appState={appState}
+                  //   files={files}
+                  //   onError={(error) => {
+                  //     excalidrawAPI?.updateScene({
+                  //       appState: {
+                  //         errorMessage: error.message,
+                  //       },
+                  //     });
+                  //   }}
+                  // />
+                  <></>
                 );
               },
             },
@@ -744,21 +745,6 @@ const ExcalidrawWrapper = () => {
         <OverwriteConfirmDialog>
           <OverwriteConfirmDialog.Actions.ExportToImage />
           <OverwriteConfirmDialog.Actions.SaveToDisk />
-          {excalidrawAPI && (
-            <OverwriteConfirmDialog.Action
-              title={t("overwriteConfirm.action.excalidrawPlus.title")}
-              actionLabel={t("overwriteConfirm.action.excalidrawPlus.button")}
-              onClick={() => {
-                exportToExcalidrawPlus(
-                  excalidrawAPI.getSceneElements(),
-                  excalidrawAPI.getAppState(),
-                  excalidrawAPI.getFiles(),
-                );
-              }}
-            >
-              {t("overwriteConfirm.action.excalidrawPlus.description")}
-            </OverwriteConfirmDialog.Action>
-          )}
         </OverwriteConfirmDialog>
         <AppFooter />
         {isCollaborating && isOffline && (
