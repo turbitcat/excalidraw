@@ -1,6 +1,6 @@
 import React from "react";
-import { useI18n } from "../../i18n";
-import { WelcomeScreen } from "../../packages/excalidraw/index";
+import { useI18n } from "../../src/i18n";
+import { WelcomeScreen } from "../../src/packages/excalidraw/index";
 
 export const AppWelcomeScreen: React.FC<{
   setCollabDialogShown: (toggle: boolean) => any;
