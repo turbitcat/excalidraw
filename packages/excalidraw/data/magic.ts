@@ -40,12 +40,15 @@ export async function diagramToHTML({
   apiKey,
   text,
   theme = "light",
+  urlBase = "https://api.openai.com/v1",
 }: {
   image: DataURL;
   apiKey: string;
   text: string;
   theme?: Theme;
+  urlBase?: string | null;
 }) {
+  urlBase = urlBase ?? "https://api.openai.com/v1";
   const body: OpenAIInput.ChatCompletionCreateParamsBase = {
     model: "gpt-4-vision-preview",
     // 4096 are max output tokens allowed for `gpt-4-vision-preview` currently
@@ -83,7 +86,7 @@ export async function diagramToHTML({
     | ({ ok: true } & OpenAIOutput.ChatCompletion)
     | ({ ok: false } & OpenAIOutput.APIError);
 
-  const resp = await fetch("https://api.openai.com/v1/chat/completions", {
+  const resp = await fetch(`${urlBase}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

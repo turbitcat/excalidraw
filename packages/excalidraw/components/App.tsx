@@ -1505,6 +1505,7 @@ class App extends React.Component<AppProps, AppState> {
                           app={this}
                           isCollaborating={this.props.isCollaborating}
                           openAIKey={this.OPENAI_KEY}
+                          openAIBaseUrl={this.OPENAI_API_BASE_URL}
                           isOpenAIKeyPersisted={this.OPENAI_KEY_IS_PERSISTED}
                           onOpenAIAPIKeyChange={this.onOpenAIKeyChange}
                           onMagicSettingsConfirm={this.onMagicSettingsConfirm}
@@ -1859,6 +1860,7 @@ class App extends React.Component<AppProps, AppState> {
     const result = await diagramToHTML({
       image: dataURL,
       apiKey: this.OPENAI_KEY,
+      urlBase: this.OPENAI_API_BASE_URL,
       text: textFromFrameChildren,
       theme: this.state.theme,
     });
@@ -1917,19 +1919,23 @@ class App extends React.Component<AppProps, AppState> {
   private OPENAI_KEY: string | null = EditorLocalStorage.get(
     EDITOR_LS_KEYS.OAI_API_KEY,
   );
+  private OPENAI_API_BASE_URL: string | null = EditorLocalStorage.get(
+    EDITOR_LS_KEYS.OAI_API_BASE_URL,
+  );
   private OPENAI_KEY_IS_PERSISTED: boolean =
     EditorLocalStorage.has(EDITOR_LS_KEYS.OAI_API_KEY) || false;
 
   private onOpenAIKeyChange = (
     openAIKey: string | null,
+    baseUrl: string,
     shouldPersist: boolean,
   ) => {
     this.OPENAI_KEY = openAIKey || null;
+    this.OPENAI_API_BASE_URL = baseUrl;
     if (shouldPersist) {
-      const didPersist = EditorLocalStorage.set(
-        EDITOR_LS_KEYS.OAI_API_KEY,
-        openAIKey,
-      );
+      const didPersist =
+        EditorLocalStorage.set(EDITOR_LS_KEYS.OAI_API_KEY, openAIKey) &&
+        EditorLocalStorage.set(EDITOR_LS_KEYS.OAI_API_BASE_URL, baseUrl);
       this.OPENAI_KEY_IS_PERSISTED = didPersist;
     } else {
       this.OPENAI_KEY_IS_PERSISTED = false;
@@ -1938,11 +1944,12 @@ class App extends React.Component<AppProps, AppState> {
 
   private onMagicSettingsConfirm = (
     apiKey: string,
+    baseUrl: string,
     shouldPersist: boolean,
     source: "tool" | "generation" | "settings",
   ) => {
     this.OPENAI_KEY = apiKey || null;
-    this.onOpenAIKeyChange(this.OPENAI_KEY, shouldPersist);
+    this.onOpenAIKeyChange(this.OPENAI_KEY, baseUrl, shouldPersist);
 
     if (source === "settings") {
       return;

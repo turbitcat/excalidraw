@@ -15,12 +15,16 @@ import { TTDDialogTab } from "./TTDDialog/TTDDialogTab";
 
 export const MagicSettings = (props: {
   openAIKey: string | null;
+  baseUrl: string | null;
   isPersisted: boolean;
-  onChange: (key: string, shouldPersist: boolean) => void;
-  onConfirm: (key: string, shouldPersist: boolean) => void;
+  onChange: (key: string, baseUrl: string, shouldPersist: boolean) => void;
+  onConfirm: (key: string, baseUrl: string, shouldPersist: boolean) => void;
   onClose: () => void;
 }) => {
   const [keyInputValue, setKeyInputValue] = useState(props.openAIKey || "");
+  const [baseUrlInputValue, setBaseUrlInputValue] = useState(
+    props.baseUrl || "https://api.openai.com/v1",
+  );
   const [shouldPersist, setShouldPersist] = useState<boolean>(
     props.isPersisted,
   );
@@ -28,7 +32,11 @@ export const MagicSettings = (props: {
   const appState = useUIAppState();
 
   const onConfirm = () => {
-    props.onConfirm(keyInputValue.trim(), shouldPersist);
+    props.onConfirm(
+      keyInputValue.trim(),
+      baseUrlInputValue.trim(),
+      shouldPersist,
+    );
   };
 
   if (appState.openDialog?.name !== "settings") {
@@ -39,7 +47,11 @@ export const MagicSettings = (props: {
     <Dialog
       onCloseRequest={() => {
         props.onClose();
-        props.onConfirm(keyInputValue.trim(), shouldPersist);
+        props.onConfirm(
+          keyInputValue.trim(),
+          baseUrlInputValue.trim(),
+          shouldPersist,
+        );
       }}
       title={
         <div style={{ display: "flex" }}>
@@ -125,7 +137,18 @@ export const MagicSettings = (props: {
             label="OpenAI API key"
             onChange={(value) => {
               setKeyInputValue(value);
-              props.onChange(value.trim(), shouldPersist);
+              props.onChange(value.trim(), baseUrlInputValue, shouldPersist);
+            }}
+            selectOnRender
+            onKeyDown={(event) => event.key === KEYS.ENTER && onConfirm()}
+          />
+          <TextField
+            value={baseUrlInputValue}
+            placeholder="Paste your API base URL here"
+            label="OpenAI API base URL"
+            onChange={(value) => {
+              setBaseUrlInputValue(value);
+              // props.onChange(value.trim(), shouldPersist);
             }}
             selectOnRender
             onKeyDown={(event) => event.key === KEYS.ENTER && onConfirm()}
