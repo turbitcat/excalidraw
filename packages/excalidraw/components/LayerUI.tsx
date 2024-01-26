@@ -233,7 +233,7 @@ const LayerUI = ({
       >
         <SelectedShapeActions
           appState={appState}
-          elements={elements}
+          elementsMap={app.scene.getNonDeletedElementsMap()}
           renderAction={actionManager.renderAction}
         />
       </Island>
